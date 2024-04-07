@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from "react";
 
-require("dotenv").config(); // Load environment variables from .env file
-
 const App = () => {
     const [files, setFiles] = useState([]);
     const [selectedFiles, setSelectedFiles] = useState([]);
 
     useEffect(() => {
-        // Fetch files from API
-        fetch(
-            "https://m0qs03328c.execute-api.eu-west-2.amazonaws.com/develop/files",
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": process.env.AWS_API_KEY, // Use the API key from the environment variable
-                },
-            }
-        )
-            .then((response) => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_AWS_API_BASE}/develop/files`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "x-api-key": import.meta.env.VITE_AWS_API_KEY,
+                        },
+                    }
+                );
+
                 if (!response.ok) {
                     throw new Error("Failed to fetch files");
                 }
-                return response.json();
-            })
-            .then((data) => {
+
+                const data = await response.json();
                 setFiles(data);
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error("Error fetching files: ", error);
-            });
+            }
+        };
+
+        fetchData();
     }, []);
 
     const handleFileUpload = (event) => {
@@ -70,8 +70,8 @@ const App = () => {
             <h2>File List</h2>
             <ul>
                 {files.map((file) => (
-                    <li key={file.id}>
-                        {file.name}{" "}
+                    <li>
+                        {file.Key}{" "}
                         <button onClick={() => handleDownload(file.url)}>
                             Download
                         </button>
