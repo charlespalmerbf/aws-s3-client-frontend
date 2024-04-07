@@ -1,35 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+require("dotenv").config(); // Load environment variables from .env file
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App = () => {
+    const [files, setFiles] = useState([]);
+    const [selectedFiles, setSelectedFiles] = useState([]);
 
-export default App
+    useEffect(() => {
+        // Fetch files from API
+        fetch(
+            "https://m0qs03328c.execute-api.eu-west-2.amazonaws.com/develop/files",
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": process.env.AWS_API_KEY, // Use the API key from the environment variable
+                },
+            }
+        )
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch files");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setFiles(data);
+            })
+            .catch((error) => {
+                console.error("Error fetching files: ", error);
+            });
+    }, []);
+
+    const handleFileUpload = (event) => {
+        setSelectedFiles([...selectedFiles, ...event.target.files]);
+    };
+
+    const handleDownload = (fileUrl) => {
+        // Simulate file download
+        window.open(fileUrl, "_blank");
+    };
+
+    const handleUpload = () => {
+        // Handle file upload to the server
+        const formData = new FormData();
+        selectedFiles.forEach((file) => {
+            formData.append("files[]", file);
+        });
+
+        fetch("https://api.example.com/upload", {
+            method: "POST",
+            body: formData,
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to upload files");
+                }
+                console.log("Files uploaded successfully");
+                setSelectedFiles([]);
+                // You can update the file list here if needed
+            })
+            .catch((error) => {
+                console.error("Error uploading files: ", error);
+            });
+    };
+
+    return (
+        <div>
+            <h2>File List</h2>
+            <ul>
+                {files.map((file) => (
+                    <li key={file.id}>
+                        {file.name}{" "}
+                        <button onClick={() => handleDownload(file.url)}>
+                            Download
+                        </button>
+                    </li>
+                ))}
+            </ul>
+            <h2>Upload Files</h2>
+            <input type="file" multiple onChange={handleFileUpload} />
+            <button onClick={handleUpload}>Upload</button>
+        </div>
+    );
+};
+
+export default App;
