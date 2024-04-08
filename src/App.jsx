@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css"; 
+import { Button } from "react-bootstrap"; 
 
 const App = () => {
     const [files, setFiles] = useState([]);
@@ -65,22 +67,55 @@ const App = () => {
             });
     };
 
+    const handleDelete = (index) => {
+        const updatedFiles = [...files];
+        updatedFiles.splice(index, 1);
+        setFiles(updatedFiles);
+    };
+
     return (
-        <div>
-            <h2>File List</h2>
-            <ul>
-                {files.map((file) => (
-                    <li>
-                        {file.Key}{" "}
-                        <button onClick={() => handleDownload(file.url)}>
-                            Download
-                        </button>
-                    </li>
-                ))}
-            </ul>
-            <h2>Upload Files</h2>
-            <input type="file" multiple onChange={handleFileUpload} />
-            <button onClick={handleUpload}>Upload</button>
+        <div className="container mt-5">
+            <div className="row">
+                <div className="col">
+                    <h2>File List</h2>
+                    <ul className="list-group">
+                        {files.map((file, index) => (
+                            <li
+                                key={index}
+                                className="list-group-item d-flex justify-content-between align-items-center"
+                            >
+                                {file.Key}
+                                <div>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => handleDownload(file.url)}
+                                    >
+                                        Download
+                                    </Button>{" "}
+                                    <Button
+                                        variant="danger"
+                                        onClick={() => handleDelete(index)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <div className="col">
+                    <h2>Upload Files</h2>
+                    <input
+                        type="file"
+                        className="form-control mb-3"
+                        multiple
+                        onChange={handleFileUpload}
+                    />
+                    <Button variant="success" onClick={handleUpload}>
+                        Upload
+                    </Button>
+                </div>
+            </div>
         </div>
     );
 };
